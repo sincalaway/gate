@@ -75,7 +75,7 @@ function renderCards(d) {
     ["最后更新", d.generated_at || "-", "时区 UTC"],
     ["SSTP 节点", s.sstp_nodes, "筛选自 VPN Gate"],
     ["已检测", s.checked, "提交给 Worker"],
-    ["可用节点", s.success, "success = true"],
+    ["可用节点", s.success, "出口查询限流 " + (s.exit_lookup_limited || 0)],
     ["国家数量", s.countries, "按可用节点统计"],
     ["住宅(估算)", s.residential_est, "数据中心 " + (s.datacenter_est || 0)]
   ];
@@ -89,7 +89,7 @@ function rowHtml(n) {
   if (n.residential === "residential") badge = '<span class="badge b-res">住宅</span>';
   else if (n.residential === "datacenter") badge = '<span class="badge b-dc">机房</span>';
   else badge = '<span class="badge b-unk">未知</span>';
-  const exit = n.exit ? ((n.exit.ip || "?") + " · " + (n.exit.org || n.exit.country || "")) : "-";
+  const exit = n.exit ? ((n.exit.ip || "?") + " · " + (n.exit.org || n.exit.country || "")) : (n.exit_lookup_limited ? "出口查询限流" : "-");
   const date = (n.checked_at || "").split(" ")[0];
   return '<tr>' +
     '<td><code title="点击复制 sstp 链接">' + n.host + ':' + n.port + '</code></td>' +
