@@ -56,6 +56,8 @@ edgetunnel 后台「自定义优选IP」框填 https://…/nodes.txt
 
 ### 第 2 步：部署检测 Worker（CheckSocks5）
 
+本仓库当前已配置为调用 `https://weathered-smoke-d933.sincfon.workers.dev/check?sstp=vpn:vpn@`。若你使用自己的 Worker，请在下方工作流配置中替换该地址。
+
 1. 打开 https://github.com/lsh8848/cm-Workers-CheckSocks5 ，点 **Fork**
 2. 进 Cloudflare 控制台 → Workers 和 Pages → 创建 → 创建 Worker
 3. 把 `_worker.js` 的全部内容粘贴进编辑器，点「部署」
@@ -72,8 +74,8 @@ edgetunnel 后台「自定义优选IP」框填 https://…/nodes.txt
 
 | 文件 | 位置 | 改成什么 | 为什么 |
 | :--- | :--- | :--- | :--- |
-| .github/workflows/check.yml | env 里的 `CHECK_WORKER` | 你的检测 Worker 域名，形如 `https://xxx.workers.dev/check?sstp=vpn:vpn@` | 检测统一走你自己的 Worker |
-| vpngate.py | `NODES_URL` | 把里面写死的固定地址换成 `你的用户名/仓库名` | 自动更新时用到的固定地址 |
+| .github/workflows/check.yml | env 里的 `CHECK_WORKER` | `https://weathered-smoke-d933.sincfon.workers.dev/check?sstp=vpn:vpn@`（使用自有 Worker 时改成对应 URL） | 检测统一走已部署的 CheckSocks5 Worker |
+| vpngate.py | `NODES_URL` | 当前默认值为 `https://sincalaway.github.io/gate/nodes.txt`；fork 后改成你的用户名/仓库名 | edgetunnel 自动拉取节点清单 |
 
 > **注意**：`vpngate.py` 中**不需要**配置 `EDT_UUID` 和 `EDT_DOMAIN`。你之前看到的这两个变量是旧版遗留，现已删除。edgetunnel 后台会自己处理 UUID 和域名。
 
@@ -129,7 +131,7 @@ https://你的GitHub用户名.github.io/仓库名/nodes.txt
 | :--- | :--- |
 | `EDGE_HOSTS` | 入口优选域名（换域名改这里） |
 | `WORKER_CHECK_URL` | 检测 Worker（本地运行默认值，Action 里用 workflow 的 `CHECK_WORKER` 覆盖） |
-| `NODES_URL` | 自动更新时用到的固定地址（fork 后改成你自己的） |
+| `NODES_URL` | 自动更新时用到的固定地址（默认指向 `sincalaway/gate`，fork 后按需修改） |
 
 > 再次强调：`vpngate.py` **不需要**配置 `EDT_UUID` 和 `EDT_DOMAIN`，这两个参数属于 edgetunnel 本身。
 
@@ -148,6 +150,8 @@ https://你的GitHub用户名.github.io/仓库名/nodes.txt
 
 ### 检测 Worker 报错
 确认 Worker 部署成功、域名填对（workflow 里的 `CHECK_WORKER`），浏览器直接访问 `https://你的Worker/check?sstp=...` 看是否返回 JSON。
+
+如果 Worker 的 `/api/lookup` 返回 429，说明 SSTP 隧道可能已连通，但出口 IP 查询被限流；流水线会保留这类节点为可用，并在页面标记“出口查询限流”，不再把它误报为离线。
 
 ### 不知道 UUID 和节点域名在哪里看
 登录 edgetunnel 后台（`https://你的域名/admin`），在后台首页就能看到。
